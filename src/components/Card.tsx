@@ -3,9 +3,17 @@ import { Link } from 'react-router';
 type CardParams = {
   e: { image_id: string; title: string; artist_title: string; id: number };
   index: number;
+  setFav: Function;
+  fav: [];
 };
 
-const Card = ({ e, index }: CardParams) => {
+const Card = ({ e, index, setFav, fav }: CardParams) => {
+  const addToFav = () => {
+    // const local = localStorage.getItem('fav');
+    // const loacalFav = (local && JSON.parse(local)) || [];
+    localStorage.setItem('fav', JSON.stringify([e]));
+  };
+
   return (
     <figure key={index} className="flex flex-col gap-2">
       <img
@@ -19,6 +27,12 @@ const Card = ({ e, index }: CardParams) => {
       <Link to={`/artwork/${e.id}`} className="btn text-[#6262b2]">
         see more
       </Link>
+      <button
+        className="btn btn-success w-[30%] text-[.6rem]"
+        onClick={addToFav}
+      >
+        Add to fav
+      </button>
     </figure>
   );
 };

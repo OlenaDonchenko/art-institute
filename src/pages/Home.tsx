@@ -12,6 +12,8 @@ const Home = () => {
   const [pageN, setPageN] = useState(1);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
 
+  const [fav, setFav] = useState<[]>([]);
+
   // fetch all by page and limit
   const fetchAll = async () => {
     const res = await fetch(
@@ -32,7 +34,7 @@ const Home = () => {
     <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {artworks?.map((e, index) => {
-          return <Card e={e} index={index} />;
+          return <Card e={e} index={index} setFav={setFav} fav={fav} />;
         })}
       </div>
       <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
