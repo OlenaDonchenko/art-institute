@@ -1,0 +1,2 @@
+# art-institute
+mini projects
