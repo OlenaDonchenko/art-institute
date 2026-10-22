@@ -1,88 +1,71 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import type { SyntheticEvent } from 'react';
+
+import { type Artwork } from '../types/myTypes';
 import Card from '../components/Card';
 
-type Artwork = {
-  title: string;
-  artist_title: string;
-  image_id: string;
-  id: number;
-};
+import { fetchAll } from '../utils/artworkCRUD';
+
+const API_URL = 'https://openaccess-api.clevelandart.org/api/artworks/';
 
 const Home = () => {
   const [pageN, setPageN] = useState(1);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
-
-  const [fav, setFav] = useState<Artwork[]>([]);
+  const [fav, setFav] = useState<[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
-  // fetch all by page and limit
-  const fetchAll = async () => {
-    const res = await fetch(
-      `https://api.artic.edu/api/v1/artworks/?page=${pageN}&limit=10&fields=title,artist_title,image_id,id`
-    );
-    const data = await res.json();
-    setArtworks(data.data ?? []);
-    console.log(data);
+  const handleSearch = async (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!searchQuery.trim()) return;
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch(
+        `${API_URL}?has_image=1&limit=10&q=${encodeURIComponent(searchQuery)}`
+      );
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch search results');
+      }
+
+      const data = await res.json();
+      const results: Artwork[] = data.data ?? [];
+
+      const filteredResults = results.filter((artwork) => {
+        const query = searchQuery.trim().toLowerCase();
+
+        return (
+          artwork.title.toLowerCase().includes(query) ||
+          artwork.creators[0]?.description.toLowerCase().includes(query)
+        );
+      });
+
+      setArtworks(filteredResults);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+      setError('Failed to search artworks. Please try again.');
+      setArtworks([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-
-const handleSearch = async (e: SyntheticEvent<HTMLFormElement>) => {
-  e.preventDefault();
-
-  if (!searchQuery.trim()) return;
-
-  setIsLoading(true);
-  setError('');
-
-  try {
-    const res = await fetch(
-      `https://api.artic.edu/api/v1/artworks/search?q=${encodeURIComponent(searchQuery)}&limit=10&fields=title,artist_title,image_id,id`
-    );
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch search results');
-    }
-
-    const data = await res.json();
-
-    const results: Artwork[] = data.data ?? [];
-
-    const filteredResults = results.filter((artwork) => {
-      const query = searchQuery.trim().toLowerCase();
-
-    return (
-      artwork.title.toLowerCase().includes(query) ||
-      artwork.artist_title?.toLowerCase().includes(query)
-    );
-  });
-
-  setArtworks(filteredResults);
-  setPageN(1);
-  } catch (error) {
-    console.error('Error fetching search results:', error);
-    setError('Failed to search artworks. Please try again.');
-    setArtworks([]);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  
   useEffect(() => {
-    fetchAll();
+    // const controller = new AbortController();
+    fetchAll(setIsLoading, setError, API_URL, pageN, setArtworks);
+    // return () => controller.abort();
   }, [pageN]);
 
   if (!artworks) return <p>Loading...</p>;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      <form
-        onSubmit={handleSearch}
-        className="mb-6 flex gap-2"
-      >
+      <form onSubmit={handleSearch} className="mb-6 flex gap-2">
         <input
           type="text"
           placeholder="Search artworks..."
@@ -95,29 +78,17 @@ const handleSearch = async (e: SyntheticEvent<HTMLFormElement>) => {
           Search
         </button>
       </form>
-      {isLoading && (
-        <p className="text-center mt-6">Searching artworks...</p>
-      )}
+      {isLoading && <p className="text-center mt-6">Searching artworks...</p>}
 
-      {error && (
-        <p className="text-center text-error mt-6">{error}</p>
-      )}
+      {error && <p className="text-center text-error mt-6">{error}</p>}
 
       {!isLoading && !error && artworks.length === 0 && (
-        <p className="text-center text-gray-500 mt-6">
-          No artworks found.
-        </p>
+        <p className="text-center text-gray-500 mt-6">No artworks found.</p>
       )}
       {artworks.length > 0 && !isLoading && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {artworks.map((e, index) => (
-            <Card
-              key={e.id}
-              e={e}
-              index={index}
-              setFav={setFav}
-              fav={fav}
-            />
+        <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {artworks?.map((e) => (
+            <Card key={e.id} e={e} setFav={setFav} fav={fav} />
           ))}
         </div>
       )}
@@ -138,7 +109,7 @@ const handleSearch = async (e: SyntheticEvent<HTMLFormElement>) => {
         </button>
       </div>
     </div>
-  )
+  );
 };
 
 export default Home;
