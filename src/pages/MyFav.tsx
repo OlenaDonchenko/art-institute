@@ -35,7 +35,11 @@ const MyFav = () => {
     localStorage.setItem('fav', JSON.stringify(localFav));
   };
 
-  const handleRemove = () => {};
+  const handleRemove = (id: number) => {
+    const updatedFav = localFav.filter((artwork: Artwork) => artwork.id !== id);
+    setlocalFav(updatedFav);
+    localStorage.setItem('fav', JSON.stringify(updatedFav));
+  };
 
   return (
     <div>
@@ -52,11 +56,11 @@ const MyFav = () => {
           ></textarea>
         </div>
       )}
-      <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 px-4 py-6">
         {localFav?.map((e: Artwork, index: number) => {
           return (
             <div key={index}>
-              <figure className="flex flex-col gap-2">
+              <figure className="flex flex-col gap-2 py-3">
                 <img
                   className="aspect-square w-full rounded-lg object-cover"
                   src={e.images?.web.url}
@@ -72,7 +76,7 @@ const MyFav = () => {
               >
                 add note
               </button>
-              <button className="btn btn-error" onClick={handleRemove}>
+              <button className="btn btn-error ml-2" onClick={() => handleRemove(e.id)}>
                 remove
               </button>
             </div>
