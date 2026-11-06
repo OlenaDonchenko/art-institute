@@ -9,8 +9,18 @@ import Home from '../../pages/Home';
 // Only the API is fake, so the test doesn't need the internet.
 
 const fakeArtworks = [
-  { id: 1, title: 'Water Lilies', creators: [{ description: 'Monet' }], images: null },
-  { id: 2, title: 'The Starry Night', creators: [{ description: 'Van Gogh' }], images: null },
+  {
+    id: 1,
+    title: 'Water Lilies',
+    creators: [{ description: 'Monet' }],
+    images: null,
+  },
+  {
+    id: 2,
+    title: 'The Starry Night',
+    creators: [{ description: 'Van Gogh' }],
+    images: null,
+  },
 ];
 
 // helper: make the fake API answer with `body`
@@ -115,7 +125,11 @@ describe('Home page: empty data', () => {
 // ---------------------------------------------------------------
 describe('Home page: bad data', () => {
   it('still shows the title when the artwork has no creators', async () => {
-    mockApi({ data: [{ id: 1, title: 'Unknown Artist Piece', creators: [], images: null }] });
+    mockApi({
+      data: [
+        { id: 1, title: 'Unknown Artist Piece', creators: [], images: null },
+      ],
+    });
     renderHome();
 
     expect(await screen.findByText(/Unknown Artist Piece/)).toBeInTheDocument();
@@ -130,7 +144,9 @@ describe('Home page: bad data', () => {
   });
 
   it('still shows the card when the title is missing', async () => {
-    mockApi({ data: [{ id: 1, creators: [{ description: 'Monet' }], images: null }] });
+    mockApi({
+      data: [{ id: 1, creators: [{ description: 'Monet' }], images: null }],
+    });
     renderHome();
 
     expect(await screen.findByText(/Monet/)).toBeInTheDocument();
@@ -221,7 +237,9 @@ describe('Home page: search', () => {
     await search('van gogh');
 
     // spaces are turned into %20 in a URL
-    expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('q=van%20gogh'));
+    expect(fetch).toHaveBeenLastCalledWith(
+      expect.stringContaining('q=van%20gogh')
+    );
   });
 
   it('does nothing when the search box is empty', async () => {
@@ -268,7 +286,9 @@ describe('Home page: search', () => {
     renderHome();
     await screen.findByText(/Water Lilies/);
 
-    mockApi({ data: [{ id: 3, creators: [{ description: 'Monet' }], images: null }] });
+    mockApi({
+      data: [{ id: 3, creators: [{ description: 'Monet' }], images: null }],
+    });
     await search('monet');
 
     expect(
